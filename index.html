@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bubli - Chat. Play. Connect.</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bubli: {
+              primary: '#7B5BE4',
+              light: '#C9B7FF',
+              dark: '#5A3DC7',
+              cream: '#FAF8FF',
+              accent: '#E8DFFF',
+              glow: '#9D8AFF'
+            }
+          },
+          fontFamily: {
+            display: ['Nunito', 'sans-serif'],
+            body: ['DM Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --bg: #FAF8FF;
+      --fg: #2D2847;
+      --muted: #6B6488;
+      --accent: #7B5BE4;
+      --accent-light: #C9B7FF;
+      --card: #FFFFFF;
+      --border: #E8E4F0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      overflow-x: hidden;
+    }
+
+    .font-display {
+      font-family: 'Nunito', sans-serif;
+    }
+
+    /* Floating Bubbles Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(5deg); }
+    }
+
+    @keyframes floatReverse {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(20px) rotate(-5deg); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.1); opacity: 1; }
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-8px); }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .animate-float {
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .animate-float-reverse {
+      animation: floatReverse 5s ease-in-out infinite;
+    }
+
+    .animate-bounce-slow {
+      animation: bounce 3s ease-in-out infinite;
+    }
+
+    .animate-pulse-soft {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .typing-dot {
+      animation: typing 1.4s ease-in-out infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    /* Scroll Reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-40px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal-left.active {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .reveal-right {
+      opacity: 0;
+      transform: translateX(40px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal-right.active {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .reveal-scale {
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal-scale.active {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Button Styles */
+    .btn-primary {
+      background: linear-gradient(135deg, #7B5BE4 0%, #9D8AFF 100%);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(123, 91, 228, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      border: 2px solid #7B5BE4;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background: #7B5BE4;
+      color: white;
+      transform: translateY(-3px);
+    }
+
+    /* Card Hover */
+    .feature-card {
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(123, 91, 228, 0.15);
+    }
+
+    .feature-card:hover .feature-icon {
+      transform: scale(1.1) rotate(-5deg);
+    }
+
+    .feature-icon {
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Navbar */
+    .navbar {
+      backdrop-filter: blur(20px);
+      background: rgba(250, 248, 255, 0.85);
+      transition: all 0.3s ease;
+    }
+
+    .navbar.scrolled {
+      box-shadow: 0 4px 20px rgba(123, 91, 228, 0.1);
+    }
+
+    .nav-link {
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #7B5BE4, #C9B7FF);
+      transition: width 0.3s ease;
+      border-radius: 2px;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    /* Chat Bubble Styles */
+    .chat-bubble {
+      background: linear-gradient(135deg, #FFFFFF 0%, #F8F5FF 100%);
+      box-shadow: 0 8px 30px rgba(123, 91, 228, 0.12);
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, #7B5BE4 0%, #5A3DC7 50%, #9D8AFF 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Background Pattern */
+    .hero-bg {
+      background: linear-gradient(180deg, #FAF8FF 0%, #F5F0FF 50%, #FAF8FF 100%);
+    }
+
+    /* Step Cards */
+    .step-card {
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .step-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .step-card:hover .step-number {
+      transform: scale(1.1);
+    }
+
+    .step-number {
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Testimonial Card */
+    .testimonial-card {
+      transition: all 0.4s ease;
+    }
+
+    .testimonial-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 15px 40px rgba(123, 91, 228, 0.12);
+    }
+
+    /* Focus States */
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid #C9B7FF;
+      outline-offset: 3px;
+    }
+
+    /* Decorative Blobs */
+    .blob {
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating Background Elements -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="blob absolute w-96 h-96 bg-bubli-light top-20 -left-48 animate-float" style="animation-duration: 8s;"></div>
+    <div class="blob absolute w-80 h-80 bg-bubli-accent top-1/2 -right-40 animate-float-reverse" style="animation-duration: 10s;"></div>
+    <div class="blob absolute w-64 h-64 bg-bubli-glow bottom-20 left-1/3 animate-float" style="animation-duration: 12s;"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar fixed top-0 left-0 right-0 z-50 border-b border-bubli-accent/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-20">
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-2 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-bubli-primary to-bubli-glow flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="8" fill="white"/>
+              <circle cx="9" cy="10" r="1.5" fill="#7B5BE4"/>
+              <circle cx="15" cy="10" r="1.5" fill="#7B5BE4"/>
+              <path d="M9 14c1 1.5 5 1.5 6 0" stroke="#7B5BE4" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="font-display font-800 text-2xl gradient-text">Bubli</span>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <div class="hidden md:flex items-center gap-8">
+          <a href="#features" class="nav-link font-medium text-bubli-dark/70 hover:text-bubli-primary">Features</a>
+          <a href="#how-it-works" class="nav-link font-medium text-bubli-dark/70 hover:text-bubli-primary">About</a>
+          <a href="#signup" class="nav-link font-medium text-bubli-dark/70 hover:text-bubli-primary">Free Signup</a>
+          <a href="signin.html" class="btn-secondary px-5 py-2.5 rounded-full font-display font-700 text-bubli-primary">Login</a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-bubli-accent/20 transition-colors" aria-label="Toggle menu">
+          <svg class="w-6 h-6 text-bubli-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div id="mobile-menu" class="hidden md:hidden pb-4">
+        <div class="flex flex-col gap-2 pt-4 border-t border-bubli-accent/20">
+          <a href="#features" class="px-4 py-3 rounded-xl hover:bg-bubli-accent/20 font-medium transition-colors">Features</a>
+          <a href="#how-it-works" class="px-4 py-3 rounded-xl hover:bg-bubli-accent/20 font-medium transition-colors">About</a>
+          <a href="#signup" class="px-4 py-3 rounded-xl hover:bg-bubli-accent/20 font-medium transition-colors">Free Signup</a>
+          <a href="#login" class="btn-secondary px-4 py-3 rounded-xl font-display font-700 text-bubli-primary text-center mt-2">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-bg relative min-h-screen pt-24 sm:pt-32 pb-16 overflow-hidden">
+    <!-- Floating Chat Bubbles -->
+    <div class="absolute inset-0 pointer-events-none">
+      <!-- Bubble 1 -->
+      <div class="absolute top-32 left-[10%] animate-float" style="animation-delay: 0s;">
+        <div class="chat-bubble rounded-3xl p-4 opacity-80">
+          <div class="flex gap-1">
+            <div class="w-2 h-2 rounded-full bg-bubli-primary typing-dot"></div>
+            <div class="w-2 h-2 rounded-full bg-bubli-primary typing-dot"></div>
+            <div class="w-2 h-2 rounded-full bg-bubli-primary typing-dot"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Bubble 2 -->
+      <div class="absolute top-48 right-[15%] animate-float-reverse hidden sm:block" style="animation-delay: 1s;">
+        <div class="chat-bubble rounded-3xl p-4 px-6 opacity-90">
+          <span class="text-sm font-medium text-bubli-dark">Hello there!</span>
+        </div>
+      </div>
+
+      <!-- Bubble 3 -->
+      <div class="absolute bottom-32 left-[8%] animate-bounce-slow hidden md:block" style="animation-delay: 0.5s;">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-bubli-light to-bubli-accent flex items-center justify-center shadow-lg">
+          <svg class="w-8 h-8 text-bubli-primary" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12c0 1.73.46 3.35 1.25 4.76L2 22l5.24-1.25C8.65 21.54 10.27 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.56 0-3.03-.4-4.32-1.1l-.62-.37-2.62.69.69-2.62-.37-.62C3.4 14.69 3 13.22 3 11.6c0-4.63 3.77-8.4 8.4-8.4s8.4 3.77 8.4 8.4-3.77 8.4-8.4 8.4z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Bubble 4 -->
+      <div class="absolute bottom-48 right-[12%] animate-float hidden lg:block" style="animation-delay: 2s;">
+        <div class="chat-bubble rounded-3xl p-4 opacity-80">
+          <div class="flex gap-2">
+            <div class="w-8 h-8 rounded-full bg-bubli-accent/50"></div>
+            <div class="space-y-1">
+              <div class="w-20 h-2 rounded-full bg-bubli-accent"></div>
+              <div class="w-16 h-2 rounded-full bg-bubli-accent/60"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Small decorative bubbles -->
+      <div class="absolute top-40 right-[30%] w-4 h-4 rounded-full bg-bubli-light animate-pulse-soft hidden sm:block"></div>
+      <div class="absolute top-72 left-[20%] w-3 h-3 rounded-full bg-bubli-accent animate-pulse-soft hidden md:block" style="animation-delay: 1s;"></div>
+      <div class="absolute bottom-40 left-[25%] w-5 h-5 rounded-full bg-bubli-glow animate-pulse-soft" style="animation-delay: 0.5s;"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="text-center max-w-4xl mx-auto">
+        <!-- Badge -->
+        <div class="reveal-scale inline-flex items-center gap-2 px-4 py-2 rounded-full bg-bubli-accent/30 border border-bubli-light mb-6">
+          <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+          <span class="text-sm font-medium text-bubli-dark">100% Free Forever</span>
+        </div>
+
+        <!-- Main Headline -->
+        <h1 class="reveal font-display font-900 text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-bubli-dark leading-tight mb-6">
+          Welcome to <span class="gradient-text">Bubli</span>
+          <br>
+          <span class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl">Chat. Play. Connect.</span>
+        </h1>
+
+        <!-- Subheadline -->
+        <p class="reveal font-body text-lg sm:text-xl md:text-2xl text-bubli-dark/70 mb-4 max-w-2xl mx-auto" style="transition-delay: 0.1s;">
+          Private one-to-one & group chats. 100% FREE. Instant, fun, and safe!
+        </p>
+
+        <!-- Description -->
+        <p class="reveal text-base sm:text-lg text-bubli-dark/60 mb-10 max-w-xl mx-auto" style="transition-delay: 0.2s;">
+          With Bubli, chatting is a breeze. Send messages, react with emojis, and share moments with friends or groups — all for free!
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="reveal flex flex-col sm:flex-row gap-4 justify-center items-center mb-16" style="transition-delay: 0.3s;">
+          <a href="signup.html" class="btn-primary px-8 py-4 rounded-full font-display font-800 text-lg text-white shadow-lg w-full sm:w-auto">
+            Start Bubli-ing for Free
+          </a>
+          <a href="#how-it-works" class="btn-secondary px-8 py-4 rounded-full font-display font-700 text-lg text-bubli-primary w-full sm:w-auto">
+            See How Bubli Works
+          </a>
+        </div>
+
+        <!-- Hero Visual - Chat Preview -->
+        <div class="reveal relative max-w-2xl mx-auto" style="transition-delay: 0.4s;">
+          <div class="chat-bubble rounded-3xl p-6 sm:p-8 border border-bubli-accent/30">
+            <!-- Chat Header -->
+            <div class="flex items-center gap-3 pb-4 border-b border-bubli-accent/30 mb-4">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-bubli-primary to-bubli-glow flex items-center justify-center">
+                <span class="text-white font-bold">A</span>
+              </div>
+              <div>
+                <p class="font-display font-700 text-bubli-dark">Alex</p>
+                <p class="text-xs text-green-500 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                  Online
+                </p>
+              </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="space-y-4">
+              <div class="flex justify-start">
+                <div class="bg-bubli-accent/30 rounded-2xl rounded-bl-md px-4 py-2 max-w-[80%]">
+                  <p class="text-bubli-dark">Hey! Have you tried Bubli yet?</p>
+                </div>
+              </div>
+              <div class="flex justify-end">
+                <div class="bg-gradient-to-br from-bubli-primary to-bubli-glow rounded-2xl rounded-br-md px-4 py-2 max-w-[80%]">
+                  <p class="text-white">Yes! It's so fun to use!</p>
+                </div>
+              </div>
+              <div class="flex justify-start">
+                <div class="bg-bubli-accent/30 rounded-2xl rounded-bl-md px-4 py-2 max-w-[80%]">
+                  <p class="text-bubli-dark">The group chats are amazing</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="mt-4 flex gap-3">
+              <div class="flex-1 bg-bubli-accent/20 rounded-full px-5 py-3 flex items-center gap-2">
+                <input type="text" placeholder="Type a message..." class="bg-transparent outline-none flex-1 text-bubli-dark placeholder-bubli-dark/40">
+              </div>
+              <button class="w-12 h-12 rounded-full bg-gradient-to-br from-bubli-primary to-bubli-glow flex items-center justify-center hover:scale-105 transition-transform" aria-label="Send message">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Floating reaction -->
+          <div class="absolute -top-4 -right-4 sm:-right-8 bg-white rounded-full px-3 py-1.5 shadow-lg animate-bounce-slow">
+            <span class="text-lg">✨</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="py-20 sm:py-28 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Section Header -->
+      <div class="text-center mb-16">
+        <h2 class="reveal font-display font-800 text-3xl sm:text-4xl md:text-5xl text-bubli-dark mb-4">
+          Why You'll Love <span class="gradient-text">Bubli</span>
+        </h2>
+        <p class="reveal text-lg text-bubli-dark/60 max-w-2xl mx-auto" style="transition-delay: 0.1s;">
+          Everything you need for fun, fast, and secure conversations
+        </p>
+      </div>
+
+      <!-- Features Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <!-- Feature 1 -->
+        <div class="reveal feature-card bg-white rounded-3xl p-6 sm:p-8 border border-bubli-accent/20">
+          <div class="feature-icon w-14 h-14 rounded-2xl bg-gradient-to-br from-bubli-primary/10 to-bubli-light/30 flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-bubli-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-xl text-bubli-dark mb-3">Instant Private Chat</h3>
+          <p class="text-bubli-dark/60 leading-relaxed">Start one-on-one conversations instantly. Your messages are delivered in real-time with zero delays.</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="reveal feature-card bg-white rounded-3xl p-6 sm:p-8 border border-bubli-accent/20" style="transition-delay: 0.1s;">
+          <div class="feature-icon w-14 h-14 rounded-2xl bg-gradient-to-br from-bubli-primary/10 to-bubli-light/30 flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-bubli-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-xl text-bubli-dark mb-3">Fun Group Chats</h3>
+          <p class="text-bubli-dark/60 leading-relaxed">Create groups with friends, react with emojis, and share moments together. The more, the merrier!</p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="reveal feature-card bg-white rounded-3xl p-6 sm:p-8 border border-bubli-accent/20" style="transition-delay: 0.2s;">
+          <div class="feature-icon w-14 h-14 rounded-2xl bg-gradient-to-br from-bubli-primary/10 to-bubli-light/30 flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-bubli-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-xl text-bubli-dark mb-3">Real-time Updates</h3>
+          <p class="text-bubli-dark/60 leading-relaxed">Powered by Supabase for lightning-fast message delivery. See typing indicators and online status instantly.</p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="reveal feature-card bg-white rounded-3xl p-6 sm:p-8 border border-bubli-accent/20" style="transition-delay: 0.3s;">
+          <div class="feature-icon w-14 h-14 rounded-2xl bg-gradient-to-br from-bubli-primary/10 to-bubli-light/30 flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-bubli-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-xl text-bubli-dark mb-3">Totally FREE</h3>
+          <p class="text-bubli-dark/60 leading-relaxed">No hidden fees, no premium tiers, no credit card required. Bubli is free today and forever.</p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="reveal feature-card bg-white rounded-3xl p-6 sm:p-8 border border-bubli-accent/20 sm:col-span-2 lg:col-span-1" style="transition-delay: 0.4s;">
+          <div class="feature-icon w-14 h-14 rounded-2xl bg-gradient-to-br from-bubli-primary/10 to-bubli-light/30 flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-bubli-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-xl text-bubli-dark mb-3">Safe & Secure</h3>
+          <p class="text-bubli-dark/60 leading-relaxed">Your conversations are private and protected. We use industry-standard encryption to keep your chats safe.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="py-20 sm:py-28 bg-gradient-to-b from-bubli-cream to-white relative overflow-hidden">
+    <!-- Decorative elements -->
+    <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-bubli-light to-transparent"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <!-- Section Header -->
+      <div class="text-center mb-16">
+        <h2 class="reveal font-display font-800 text-3xl sm:text-4xl md:text-5xl text-bubli-dark mb-4">
+          How <span class="gradient-text">Bubli</span> Works
+        </h2>
+        <p class="reveal text-lg text-bubli-dark/60 max-w-2xl mx-auto" style="transition-delay: 0.1s;">
+          Get started in three simple steps
+        </p>
+      </div>
+
+      <!-- Steps -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+        <!-- Step 1 -->
+        <div class="reveal step-card text-center">
+          <div class="relative inline-block mb-6">
+            <div class="step-number w-20 h-20 rounded-2xl bg-gradient-to-br from-bubli-primary to-bubli-glow flex items-center justify-center shadow-xl">
+              <span class="font-display font-900 text-3xl text-white">1</span>
+            </div>
+            <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-bubli-accent flex items-center justify-center animate-pulse-soft">
+              <svg class="w-4 h-4 text-bubli-primary" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+            </div>
+          </div>
+          <h3 class="font-display font-700 text-xl text-bubli-dark mb-3">Sign Up Free</h3>
+          <p class="text-bubli-dark/60 leading-relaxed">Create your Bubli account in seconds. No credit card, no hassle, just pure fun waiting for you.</p>
+        </div>
+
+        <!-- Connector (hidden on mobile) -->
+        <div class="hidden md:flex items-center justify-center absolute left-1/3 top-1/2 w-1/6">
+          <div class="h-1 w-full bg-gradient-to-r from-bubli-light to-bubli-accent rounded-full"></div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="reveal step-card text-center" style="transition-delay: 0.15s;">
+          <div class="relative inline-block mb-6">
+            <div class="step-number w-20 h-20 rounded-2xl bg-gradient-to-br from-bubli-primary to-bubli-glow flex items-center justify-center shadow-xl">
+              <span class="font-display font-900 text-3xl text-white">2</span>
+            </div>
+            <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-bubli-accent flex items-center justify-center animate-pulse-soft" style="animation-delay: 0.5s;">
+              <svg class="w-4 h-4 text-bubli-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+            </div>
+          </div>
+          <h3 class="font-display font-700 text-xl text-bubli-dark mb-3">Start Chatting</h3>
+          <p class="text-bubli-dark/60 leading-relaxed">Find friends, start private chats, or create groups. Your conversations come alive instantly.</p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="reveal step-card text-center" style="transition-delay: 0.3s;">
+          <div class="relative inline-block mb-6">
+            <div class="step-number w-20 h-20 rounded-2xl bg-gradient-to-br from-bubli-primary to-bubli-glow flex items-center justify-center shadow-xl">
+              <span class="font-display font-900 text-3xl text-white">3</span>
+            </div>
+            <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-bubli-accent flex items-center justify-center animate-pulse-soft" style="animation-delay: 1s;">
+              <svg class="w-4 h-4 text-bubli-primary" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+              </svg>
+            </div>
+          </div>
+          <h3 class="font-display font-700 text-xl text-bubli-dark mb-3">Share & React</h3>
+          <p class="text-bubli-dark/60 leading-relaxed">React with emojis, share moments, and enjoy meaningful conversations. This is what Bubli is all about!</p>
+        </div>
+      </div>
+
+      <!-- Animated typing indicator -->
+      <div class="reveal mt-16 flex justify-center" style="transition-delay: 0.4s;">
+        <div class="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-bubli-accent/30 border border-bubli-light">
+          <span class="text-bubli-dark/70 font-medium">People are Bubli-ing right now</span>
+          <div class="flex gap-1">
+            <div class="w-2 h-2 rounded-full bg-bubli-primary typing-dot"></div>
+            <div class="w-2 h-2 rounded-full bg-bubli-primary typing-dot"></div>
+            <div class="w-2 h-2 rounded-full bg-bubli-primary typing-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="py-20 sm:py-28 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Section Header -->
+      <div class="text-center mb-16">
+        <h2 class="reveal font-display font-800 text-3xl sm:text-4xl md:text-5xl text-bubli-dark mb-4">
+          People Love <span class="gradient-text">Bubli</span>
+        </h2>
+        <p class="reveal text-lg text-bubli-dark/60 max-w-2xl mx-auto" style="transition-delay: 0.1s;">
+          Join thousands of happy chatters
+        </p>
+      </div>
+
+      <!-- Testimonials Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Testimonial 1 -->
+        <div class="reveal testimonial-card bg-white rounded-3xl p-6 sm:p-8 border border-bubli-accent/20">
+          <div class="flex items-center gap-1 mb-4">
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-bubli-dark/70 mb-6 leading-relaxed">"Bubli is seriously the cutest chat app I've ever used! The group chats with my friends are so much fun. Love the reactions!"</p>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center">
+              <span class="text-white font-bold">S</span>
+            </div>
+            <div>
+              <p class="font-display font-700 text-bubli-dark">Sarah M.</p>
+              <p class="text-sm text-bubli-dark/50">College Student</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial 2 -->
+        <div class="reveal testimonial-card bg-white rounded-3xl p-6 sm:p-8 border border-bubli-accent/20" style="transition-delay: 0.1s;">
+          <div class="flex items-center gap-1 mb-4">
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-bubli-dark/70 mb-6 leading-relaxed">"Finally a chat app that's actually FREE! No surprises, no locked features. Bubli delivers what it promises."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
+              <span class="text-white font-bold">J</span>
+            </div>
+            <div>
+              <p class="font-display font-700 text-bubli-dark">Jake T.</p>
+              <p class="text-sm text-bubli-dark/50">Freelancer</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial 3 -->
+        <div class="reveal testimonial-card bg-white rounded-3xl p-6 sm:p-8 border border-bubli-accent/20 md:col-span-2 lg:col-span-1" style="transition-delay: 0.2s;">
+          <div class="flex items-center gap-1 mb-4">
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-bubli-dark/70 mb-6 leading-relaxed">"My family uses Bubli for our group chat. It's fast, simple, and everyone from my grandma to my little cousin loves it!"</p>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+              <span class="text-white font-bold">M</span>
+            </div>
+            <div>
+              <p class="font-display font-700 text-bubli-dark">Maria L.</p>
+              <p class="text-sm text-bubli-dark/50">Teacher</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section id="signup" class="py-20 sm:py-28 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-bubli-primary via-bubli-glow to-bubli-primary"></div>
+    
+    <!-- Decorative bubbles -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+      <div class="absolute top-10 left-10 w-32 h-32 rounded-full bg-white/10 animate-float"></div>
+      <div class="absolute bottom-20 right-20 w-48 h-48 rounded-full bg-white/5 animate-float-reverse"></div>
+      <div class="absolute top-1/2 left-1/4 w-24 h-24 rounded-full bg-white/10 animate-bounce-slow hidden sm:block"></div>
+      <div class="absolute bottom-1/3 right-1/3 w-16 h-16 rounded-full bg-white/10 animate-float hidden md:block"></div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+      <h2 class="reveal font-display font-900 text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-4">
+        Join Bubli
+      </h2>
+      <p class="reveal text-lg sm:text-xl text-white/80 mb-10 max-w-2xl mx-auto" style="transition-delay: 0.1s;">
+        Start private chats and group fun instantly. No credit card required. No hidden fees. Just pure chatting joy.
+      </p>
+      
+      <div class="reveal flex flex-col sm:flex-row gap-4 justify-center items-center" style="transition-delay: 0.2s;">
+        <a href="signup.html" class="group inline-flex items-center gap-3 bg-white px-8 py-4 rounded-full font-display font-800 text-lg text-bubli-primary shadow-2xl hover:shadow-white/25 hover:scale-105 transition-all">
+          Start Bubli-ing for Free
+          <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Trust indicators -->
+      <div class="reveal mt-12 flex flex-wrap justify-center items-center gap-6 sm:gap-8" style="transition-delay: 0.3s;">
+        <div class="flex items-center gap-2 text-white/70">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span class="text-sm sm:text-base">Free Forever</span>
+        </div>
+        <div class="flex items-center gap-2 text-white/70">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <span class="text-sm sm:text-base">Secure & Private</span>
+        </div>
+        <div class="flex items-center gap-2 text-white/70">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          <span class="text-sm sm:text-base">Instant Setup</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-12 sm:py-16 bg-bubli-dark">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <!-- Brand -->
+        <div class="md:col-span-2">
+          <a href="#" class="inline-flex items-center gap-2 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-bubli-primary to-bubli-glow flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="8" fill="white"/>
+                <circle cx="9" cy="10" r="1.5" fill="#7B5BE4"/>
+                <circle cx="15" cy="10" r="1.5" fill="#7B5BE4"/>
+                <path d="M9 14c1 1.5 5 1.5 6 0" stroke="#7B5BE4" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="font-display font-800 text-2xl text-white">Bubli</span>
+          </a>
+          <p class="text-bubli-light/60 max-w-sm leading-relaxed">Spreading smiles, one chat at a time! Join millions of users who've made Bubli their home for conversations.</p>
+        </div>
+
+        <!-- Links -->
+        <div>
+          <h4 class="font-display font-700 text-white mb-4">Product</h4>
+          <ul class="space-y-3">
+            <li><a href="#features" class="text-bubli-light/60 hover:text-white transition-colors">Features</a></li>
+            <li><a href="#how-it-works" class="text-bubli-light/60 hover:text-white transition-colors">About</a></li>
+            <li><a href="#" class="text-bubli-light/60 hover:text-white transition-colors">Privacy Policy</a></li>
+            <li><a href="#" class="text-bubli-light/60 hover:text-white transition-colors">Terms of Service</a></li>
+          </ul>
+        </div>
+
+        <!-- Social -->
+        <div>
+          <h4 class="font-display font-700 text-white mb-4">Connect</h4>
+          <div class="flex gap-3">
+            <a href="#" class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-bubli-primary transition-colors" aria-label="Twitter">
+              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
+              </svg>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-bubli-primary transition-colors" aria-label="Instagram">
+              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                <circle cx="17.5" cy="6.5" r="1.5"/>
+              </svg>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-bubli-primary transition-colors" aria-label="GitHub">
+              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom -->
+      <div class="pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-bubli-light/50 text-sm">2024 Bubli. All rights reserved.</p>
+        <p class="text-bubli-light/50 text-sm font-display">Bubli — spreading smiles, one chat at a time!</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Initialize variables first
+    const navbar = document.querySelector('.navbar');
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Navbar scroll effect
+    function handleScroll() {
+      if (window.scrollY > 20) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check
+
+    // Mobile menu toggle
+    mobileMenuBtn.addEventListener('click', function() {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Close mobile menu when clicking a link
+    const mobileLinks = mobileMenu.querySelectorAll('a');
+    mobileLinks.forEach(function(link) {
+      link.addEventListener('click', function() {
+        mobileMenu.classList.add('hidden');
+      });
+    });
+
+    // Scroll reveal animation
+    function initScrollReveal() {
+      const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+      
+      if (prefersReducedMotion) {
+        // Show all elements immediately if reduced motion is preferred
+        revealElements.forEach(function(el) {
+          el.classList.add('active');
+        });
+        return;
+      }
+
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -50px 0px',
+        threshold: 0.1
+      };
+
+      const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            // Add staggered delay based on element position
+            const delay = entry.target.style.transitionDelay || '0s';
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      revealElements.forEach(function(el) {
+        observer.observe(el);
+      });
+    }
+
+    // Initialize scroll reveal when DOM is ready
+    document.addEventListener('DOMContentLoaded', initScrollReveal);
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+      anchor.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href === '#') return;
+        
+        const target = document.querySelector(href);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({
+            behavior: prefersReducedMotion ? 'auto' : 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+    // Add parallax effect to floating elements
+    if (!prefersReducedMotion) {
+      let ticking = false;
+      
+      document.addEventListener('mousemove', function(e) {
+        if (!ticking) {
+          window.requestAnimationFrame(function() {
+            const blobs = document.querySelectorAll('.blob');
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            
+            blobs.forEach(function(blob, index) {
+              const speed = (index + 1) * 10;
+              const x = (mouseX - 0.5) * speed;
+              const y = (mouseY - 0.5) * speed;
+              blob.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+            });
+            
+            ticking = false;
+          });
+          ticking = true;
+        }
+      });
+    }
+  </script>
+</body>
+</html>
