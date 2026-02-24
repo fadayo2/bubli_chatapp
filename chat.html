@@ -65,6 +65,9 @@
       background: var(--bg);
       color: var(--fg);
       overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     .font-display { font-family: 'Nunito', sans-serif; }
@@ -89,11 +92,166 @@
     .animate-message-in { animation: messageIn 0.3s ease-out; }
     .animate-pop-in { animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     
-    /* Skeleton Loading */
-    .skeleton {
-        background: linear-gradient(90deg, var(--border) 25%, var(--accent-light) 50%, var(--border) 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
+    /* 3D Animation Container */
+    .effect-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .shape-3d {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      transform-style: preserve-3d;
+      animation: float3d 4s infinite ease-in-out;
+    }
+
+    @keyframes float3d {
+      0%, 100% { transform: translateY(0) rotateX(0deg) rotateY(0deg); }
+      50% { transform: translateY(-30px) rotateX(180deg) rotateY(180deg); }
+    }
+
+    .cube {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: spin 6s infinite linear;
+    }
+
+    @keyframes spin {
+      from { transform: rotateX(0deg) rotateY(0deg); }
+      to { transform: rotateX(360deg) rotateY(360deg); }
+    }
+
+    .cube div {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: rgba(123, 91, 228, 0.8);
+      border: 2px solid white;
+      box-shadow: 0 0 20px rgba(123, 91, 228, 0.5);
+    }
+
+    .cube .front { transform: translateZ(25px); }
+    .cube .back { transform: rotateY(180deg) translateZ(25px); }
+    .cube .right { transform: rotateY(90deg) translateZ(25px); }
+    .cube .left { transform: rotateY(-90deg) translateZ(25px); }
+    .cube .top { transform: rotateX(90deg) translateZ(25px); }
+    .cube .bottom { transform: rotateX(-90deg) translateZ(25px); }
+
+    .sphere {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ff6b6b, #ff1493);
+      box-shadow: 0 0 30px #ff1493;
+      transform-style: preserve-3d;
+      animation: pulse3d 2s infinite alternate;
+    }
+
+    @keyframes pulse3d {
+      0% { transform: scale(1) rotateX(0deg); }
+      100% { transform: scale(1.3) rotateX(360deg); }
+    }
+
+    .ring {
+      width: 60px;
+      height: 60px;
+      border: 4px solid gold;
+      border-radius: 50%;
+      transform-style: preserve-3d;
+      animation: rotateRing 3s infinite linear;
+    }
+
+    @keyframes rotateRing {
+      from { transform: rotateX(0deg) rotateY(0deg); }
+      to { transform: rotateX(360deg) rotateY(360deg); }
+    }
+
+    .star {
+      width: 0;
+      height: 0;
+      border-left: 25px solid transparent;
+      border-right: 25px solid transparent;
+      border-bottom: 40px solid gold;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: twinkle 1.5s infinite alternate;
+    }
+
+    @keyframes twinkle {
+      0% { opacity: 0.2; transform: scale(0.8) rotateY(0deg); }
+      100% { opacity: 1; transform: scale(1.2) rotateY(180deg); }
+    }
+
+    .star:after {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: -25px;
+      width: 0;
+      height: 0;
+      border-left: 25px solid transparent;
+      border-right: 25px solid transparent;
+      border-top: 40px solid gold;
+    }
+
+    /* Reaction button */
+    .reaction-trigger {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      cursor: pointer;
+      font-size: 1.2rem;
+      line-height: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .message-wrapper:hover .reaction-trigger {
+      opacity: 1;
+    }
+    .reaction-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .reaction-badge.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .reaction-badge:hover {
+      transform: scale(1.05);
+    }
+    .reaction-picker {
+      position: absolute;
+      z-index: 40;
+      display: flex;
+      gap: 4px;
+      padding: 8px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 40px rgba(123, 91, 228, 0.2);
     }
 
     .message-bubble { transition: transform 0.2s ease, box-shadow 0.2s ease; }
@@ -116,12 +274,33 @@
     .chat-input { background: var(--card); border: 2px solid var(--border); transition: all 0.2s ease; }
     .chat-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(123, 91, 228, 0.1); }
 
-    /* Only animate the dot if it has the class */
     .online-dot.is-online { animation: pulse 2s ease-in-out infinite; }
 
-    .emoji-picker { background: var(--card); border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(123, 91, 228, 0.2); }
-    .emoji-btn { transition: transform 0.15s ease; }
-    .emoji-btn:hover { transform: scale(1.3); }
+    .emoji-picker, .effects-picker {
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 40px rgba(123, 91, 228, 0.2);
+    }
+    .emoji-btn, .effect-btn {
+      transition: transform 0.15s ease;
+      cursor: pointer;
+    }
+    .emoji-btn:hover, .effect-btn:hover {
+      transform: scale(1.3);
+    }
+    .effect-btn {
+      padding: 0.5rem;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-light);
+      color: var(--fg);
+    }
+    .dark .effect-btn {
+      background: var(--accent);
+      color: white;
+    }
 
     .theme-toggle { transition: transform 0.3s ease; }
     .theme-toggle:hover { transform: rotate(180deg); }
@@ -139,15 +318,36 @@
     }
 
     .floating-bubble { position: absolute; border-radius: 50%; pointer-events: none; opacity: 0.08; }
+
+    /* Input area fixed at bottom */
+    .input-area {
+      flex-shrink: 0;
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+      background: var(--card);
+      transition: opacity 0.3s ease;
+    }
+    .input-area.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+    }
   </style>
 </head>
-<body class="h-screen flex flex-col dark:bg-[#1A1625]">
+<body class="dark:bg-[#1A1625]">
   <!-- Floating Background -->
   <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
     <div class="floating-bubble w-40 h-40 bg-bubli-primary top-20 left-20 animate-float" style="animation-duration: 12s;"></div>
     <div class="floating-bubble w-28 h-28 bg-bubli-light top-1/3 right-24 animate-float" style="animation-duration: 16s; animation-delay: 2s;"></div>
     <div class="floating-bubble w-20 h-20 bg-bubli-glow bottom-32 left-1/4 animate-float" style="animation-duration: 14s; animation-delay: 4s;"></div>
   </div>
+
+  <!-- 3D Effect Container -->
+  <div id="effect-container" class="effect-container"></div>
 
   <div class="flex-1 flex relative z-10 overflow-hidden">
     <div class="sidebar-overlay md:hidden" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
@@ -184,9 +384,7 @@
         <!-- Friend Requests -->
         <div class="border-t border-bubli-accent/20 dark:border-[#3D3555] pt-2 mt-2">
           <h3 class="text-xs font-display font-700 text-bubli-dark/50 dark:text-white/50 uppercase tracking-wider mb-2">Requests</h3>
-          <div id="requests-list" class="space-y-2 max-h-32 overflow-y-auto">
-             <!-- Requests render here -->
-          </div>
+          <div id="requests-list" class="space-y-2 max-h-32 overflow-y-auto"></div>
         </div>
       </div>
 
@@ -194,9 +392,7 @@
       <div class="flex-1 overflow-y-auto p-2">
         <div class="mb-4">
           <h3 class="px-3 py-2 text-xs font-display font-700 text-bubli-dark/50 dark:text-white/50 uppercase tracking-wider">Private Chats</h3>
-          <div id="private-chats-list">
-             <!-- Loading state handled by JS -->
-          </div>
+          <div id="private-chats-list"></div>
         </div>
         <div>
           <h3 class="px-3 py-2 text-xs font-display font-700 text-bubli-dark/50 dark:text-white/50 uppercase tracking-wider">Group Chats</h3>
@@ -228,11 +424,8 @@
           <svg class="w-5 h-5 text-bubli-dark dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
         
-        <div id="chat-header-content" class="flex-1">
-             <!-- Header content rendered by JS -->
-        </div>
+        <div id="chat-header-content" class="flex-1"></div>
 
-        <!-- Action buttons rendered by JS logic but static placeholder for layout stability -->
         <button id="header-action-btn" class="btn-profile ml-auto px-4 py-2 rounded-xl font-display font-600 text-sm text-bubli-primary dark:text-bubli-light flex items-center gap-2 opacity-0 pointer-events-none transition-opacity">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
           <span class="hidden sm:inline">View Profile</span>
@@ -240,15 +433,14 @@
       </header>
 
       <!-- Messages Area -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-3" id="messages-container">
-          <!-- Default Welcome State -->
-          <div class="h-full flex flex-col items-center justify-center text-center px-4 animate-fade-up">
-             <div class="w-20 h-20 rounded-full bg-bubli-accent/20 flex items-center justify-center mb-4">
-                <svg class="w-10 h-10 text-bubli-primary/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-             </div>
-             <h3 class="font-display font-800 text-lg text-bubli-dark dark:text-white mb-1">Welcome to Bubli!</h3>
-             <p class="text-sm text-bubli-dark/50 dark:text-white/50 max-w-xs">Select a chat or add a friend to start.</p>
+      <div class="flex-1 overflow-y-auto p-4 space-y-3 main-content" id="messages-container">
+        <div class="h-full flex flex-col items-center justify-center text-center px-4 animate-fade-up">
+          <div class="w-20 h-20 rounded-full bg-bubli-accent/20 flex items-center justify-center mb-4">
+            <svg class="w-10 h-10 text-bubli-primary/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
           </div>
+          <h3 class="font-display font-800 text-lg text-bubli-dark dark:text-white mb-1">Welcome to Bubli!</h3>
+          <p class="text-sm text-bubli-dark/50 dark:text-white/50 max-w-xs">Select a chat or add a friend to start.</p>
+        </div>
       </div>
 
       <!-- Typing Indicator -->
@@ -263,12 +455,45 @@
         </div>
       </div>
 
-      <!-- Message Input -->
-      <div class="flex-shrink-0 p-4 border-t border-bubli-accent/20 dark:border-[#3D3550]" style="background: var(--card);">
+      <!-- Message Input & Effects -->
+      <div class="input-area" id="input-area">
         <div class="flex items-end gap-2">
-          <button onclick="toggleEmojiPicker()" class="flex-shrink-0 p-3 rounded-xl hover:bg-bubli-accent/20 transition-colors" aria-label="Add emoji">
-            <svg class="w-5 h-5 text-bubli-dark/50 dark:text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          </button>
+          <!-- Effects button -->
+          <div class="relative">
+            <button onclick="toggleEffectsPicker()" class="flex-shrink-0 p-3 rounded-xl hover:bg-bubli-accent/20 transition-colors" aria-label="Add effect">
+              <svg class="w-5 h-5 text-bubli-dark/50 dark:text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+            </button>
+            <div id="effects-picker" class="effects-picker absolute bottom-12 left-0 w-48 rounded-2xl p-3 hidden z-50 animate-pop-in">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="font-display font-700 text-sm text-bubli-dark dark:text-white">Effects</h4>
+                <button onclick="toggleEffectsPicker()" class="p-1 rounded hover:bg-bubli-accent/20"><svg class="w-4 h-4 text-bubli-dark/50 dark:text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="effect-btn" onclick="triggerEffect('party')">🎉 Party</button>
+                <button class="effect-btn" onclick="triggerEffect('fireworks')">🎆 Fireworks</button>
+                <button class="effect-btn" onclick="triggerEffect('hearts')">❤️ Hearts</button>
+                <button class="effect-btn" onclick="triggerEffect('rainbow')">🌈 Rainbow</button>
+                <button class="effect-btn" onclick="triggerEffect('stars')">⭐ Stars</button>
+                <button class="effect-btn" onclick="triggerEffect('sparkle')">✨ Sparkle</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Emoji button -->
+          <div class="relative">
+            <button onclick="toggleEmojiPicker()" class="flex-shrink-0 p-3 rounded-xl hover:bg-bubli-accent/20 transition-colors" aria-label="Add emoji">
+              <svg class="w-5 h-5 text-bubli-dark/50 dark:text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </button>
+            <div class="emoji-picker absolute bottom-12 left-0 w-72 rounded-2xl p-3 hidden z-50 animate-pop-in" id="emoji-picker">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="font-display font-700 text-sm text-bubli-dark dark:text-white">Emojis</h4>
+                <button onclick="toggleEmojiPicker()" class="p-1 rounded hover:bg-bubli-accent/20"><svg class="w-4 h-4 text-bubli-dark/50 dark:text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+              </div>
+              <div class="grid grid-cols-8 gap-0.5" id="emoji-grid"></div>
+            </div>
+          </div>
+
+          <!-- Message input -->
           <div class="flex-1 relative">
             <textarea id="message-input" placeholder="Say something bubbly..." rows="1" class="chat-input w-full px-4 py-3 rounded-2xl outline-none resize-none text-bubli-dark dark:text-white placeholder-bubli-dark/40 text-sm" onkeydown="handleKeyDown(event)" oninput="autoResize(this)"></textarea>
           </div>
@@ -277,34 +502,55 @@
           </button>
         </div>
       </div>
-
-      <!-- Emoji Picker -->
-      <div class="emoji-picker absolute bottom-20 left-4 w-72 rounded-2xl p-3 hidden z-50 animate-pop-in" id="emoji-picker">
-        <div class="flex items-center justify-between mb-2">
-          <h4 class="font-display font-700 text-sm text-bubli-dark dark:text-white">Emojis</h4>
-          <button onclick="toggleEmojiPicker()" class="p-1 rounded hover:bg-bubli-accent/20"><svg class="w-4 h-4 text-bubli-dark/50 dark:text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
-        </div>
-        <div class="grid grid-cols-8 gap-0.5" id="emoji-grid"></div>
-      </div>
     </main>
   </div>
 
-  <!-- Profile Modal -->
+  <!-- Profile Modal (unchanged) -->
   <div class="modal-overlay fixed inset-0 z-50 hidden items-center justify-center p-4" id="profile-modal">
-    <div class="modal-content rounded-3xl p-6 w-full max-w-sm animate-pop-in">
+    <div class="modal-content rounded-3xl p-6 w-full max-w-md animate-pop-in">
       <div class="text-center">
-        <div class="relative inline-block mb-4">
+        <div class="relative inline-block mb-3">
           <img id="profile-avatar" src="" alt="Profile" class="w-24 h-24 rounded-full border-4 border-bubli-accent/30">
-          <span id="profile-status" class="absolute bottom-1 right-1 w-5 h-5 bg-green-500 rounded-full border-3 border-white dark:border-[#2D2640]"></span>
+          <span id="profile-status-dot" class="absolute bottom-1 right-1 w-5 h-5 rounded-full border-3 border-white dark:border-[#2D2640]"></span>
         </div>
-        <h3 id="profile-name" class="font-display font-800 text-xl text-bubli-dark dark:text-white mb-1"></h3>
-        <p id="profile-status-text" class="text-sm text-green-500 mb-4">Online</p>
-        <div class="bg-bubli-accent/10 dark:bg-bubli-primary/20 rounded-2xl p-4 mb-4">
-          <div class="grid grid-cols-2 gap-4 text-center">
-            <div><p id="profile-messages" class="font-display font-800 text-2xl text-bubli-primary dark:text-bubli-light">0</p><p class="text-xs text-bubli-dark/50 dark:text-white/50">Messages</p></div>
-            <div><p id="profile-chats" class="font-display font-800 text-2xl text-bubli-primary dark:text-bubli-light">0</p><p class="text-xs text-bubli-dark/50 dark:text-white/50">Shared Chats</p></div>
+        <h3 id="profile-name" class="font-display font-800 text-2xl text-bubli-dark dark:text-white mb-1"></h3>
+        <p id="profile-status-text" class="text-sm mb-2"></p>
+        
+        <div class="mb-4 max-w-sm mx-auto">
+          <div id="profile-bio-display" class="flex items-center justify-center gap-2">
+            <p class="text-sm text-bubli-dark/70 dark:text-white/70 italic"></p>
+            <button id="edit-bio-btn" class="text-bubli-primary hover:text-bubli-dark transition-colors hidden">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+            </button>
+          </div>
+          <div id="profile-bio-edit" class="hidden">
+            <textarea id="bio-textarea" rows="2" class="w-full px-3 py-2 text-sm rounded-xl bg-bubli-accent/20 dark:bg-[#2D2640] border border-bubli-accent/30 focus:outline-none focus:ring-2 focus:ring-bubli-primary/50 resize-none"></textarea>
+            <div class="flex gap-2 mt-2">
+              <button id="save-bio-btn" class="flex-1 py-1.5 px-3 rounded-lg bg-bubli-primary text-white text-sm font-semibold hover:bg-bubli-dark transition">Save</button>
+              <button id="cancel-bio-btn" class="flex-1 py-1.5 px-3 rounded-lg border border-bubli-accent/30 text-bubli-dark dark:text-white text-sm hover:bg-bubli-accent/10 transition">Cancel</button>
+            </div>
           </div>
         </div>
+
+        <div class="bg-bubli-accent/10 dark:bg-bubli-primary/20 rounded-2xl p-4 mb-4">
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div>
+              <p id="profile-messages" class="font-display font-800 text-2xl text-bubli-primary dark:text-bubli-light">0</p>
+              <p class="text-xs text-bubli-dark/50 dark:text-white/50">Messages</p>
+            </div>
+            <div>
+              <p id="profile-chats" class="font-display font-800 text-2xl text-bubli-primary dark:text-bubli-light">0</p>
+              <p class="text-xs text-bubli-dark/50 dark:text-white/50">Shared Chats</p>
+            </div>
+            <div>
+              <p id="profile-mutual-friends" class="font-display font-800 text-2xl text-bubli-primary dark:text-bubli-light">0</p>
+              <p class="text-xs text-bubli-dark/50 dark:text-white/50">Mutual Friends</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-xs text-bubli-dark/40 dark:text-white/40 mb-4" id="profile-joined"></p>
+
         <div class="flex gap-2">
           <button onclick="closeProfile()" class="flex-1 py-3 rounded-xl border-2 border-bubli-accent/30 font-display font-600 text-bubli-dark dark:text-white hover:bg-bubli-accent/10 transition-colors">Close</button>
           <button onclick="startDirectChat()" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-bubli-primary to-bubli-glow font-display font-600 text-white hover:shadow-lg transition-all">Send Message</button>
@@ -313,7 +559,7 @@
     </div>
   </div>
 
-  <!-- Request Modal -->
+  <!-- Request Modal (unchanged) -->
   <div class="modal-overlay fixed inset-0 z-50 hidden items-center justify-center p-4" id="request-modal">
     <div class="modal-content rounded-3xl p-6 w-full max-w-sm animate-pop-in">
       <div class="text-center">
@@ -353,8 +599,10 @@
     let groupChats = [];
     let pendingRequests = [];
     let messages = [];
+    let messageReactions = {};
     let activeSubscriptions = [];
     let typingTimeouts = {};
+    let currentOpenReactionPicker = null;
 
     let currentRequestId = null;
     let currentRequestSenderId = null;
@@ -368,6 +616,7 @@
     const messagesContainer = document.getElementById('messages-container');
     const messageInput = document.getElementById('message-input');
     const emojiPicker = document.getElementById('emoji-picker');
+    const effectsPicker = document.getElementById('effects-picker');
     const emojiGrid = document.getElementById('emoji-grid');
     const typingIndicator = document.getElementById('typing-indicator');
     const typingText = document.getElementById('typing-text');
@@ -375,8 +624,19 @@
     const sidebarOverlay = document.getElementById('sidebar-overlay');
     const profileModal = document.getElementById('profile-modal');
     const friendUsernameInput = document.getElementById('friend-username');
+    const inputArea = document.getElementById('input-area');
+    const effectContainer = document.getElementById('effect-container');
+
+    // Profile modal sub-elements
+    const profileBioDisplay = document.getElementById('profile-bio-display');
+    const profileBioEdit = document.getElementById('profile-bio-edit');
+    const editBioBtn = document.getElementById('edit-bio-btn');
+    const saveBioBtn = document.getElementById('save-bio-btn');
+    const cancelBioBtn = document.getElementById('cancel-bio-btn');
+    const bioTextarea = document.getElementById('bio-textarea');
 
     const emojis = ['😀', '😂', '🥰', '😎', '🤔', '😍', '🎉', '👋', '❤️', '🔥', '✨', '👏', '😊', '🤗', '💕', '🙌', '💪', '🥳', '😄', '💖', '🌟', '☺️', '😋', '🤩', '😺', '🤭', '😇', '🙃', '😌', '🥺'];
+    const reactionEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡'];
 
     // ---------- Helper ----------
     function showMessage(msg, isError = false) {
@@ -388,7 +648,92 @@
         setTimeout(() => toast.remove(), 3000);
     }
 
-    // ---------- Authentication ----------
+    // ---------- 3D Effects (CSS based) ----------
+    function clearEffects() {
+        effectContainer.innerHTML = '';
+    }
+
+    function createShape(type, color) {
+        const shape = document.createElement('div');
+        shape.className = 'shape-3d';
+        shape.style.left = Math.random() * 100 + '%';
+        shape.style.top = Math.random() * 100 + '%';
+        shape.style.animationDelay = Math.random() * 2 + 's';
+        shape.style.animationDuration = (3 + Math.random() * 3) + 's';
+
+        if (type === 'cube') {
+            const cube = document.createElement('div');
+            cube.className = 'cube';
+            for (let face of ['front', 'back', 'right', 'left', 'top', 'bottom']) {
+                const div = document.createElement('div');
+                div.className = face;
+                div.style.background = color;
+                cube.appendChild(div);
+            }
+            shape.appendChild(cube);
+        } else if (type === 'sphere') {
+            shape.className = 'sphere';
+            shape.style.background = color;
+        } else if (type === 'ring') {
+            shape.className = 'ring';
+            shape.style.borderColor = color;
+        } else if (type === 'star') {
+            shape.className = 'star';
+            shape.style.borderBottomColor = color;
+        }
+        return shape;
+    }
+
+    function runEffect(effect) {
+        clearEffects();
+        const colors = {
+            party: ['#ff6b6b', '#4ecdc4', '#ffe66d', '#c7b9ff', '#ff9f1c'],
+            fireworks: ['#ff4500', '#ff8c00', '#ffd700', '#ff1493', '#00ced1'],
+            hearts: ['#ff69b4', '#ff1493', '#ffb6c1', '#ff0000'],
+            rainbow: ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#8f00ff'],
+            stars: ['#ffd700', '#ffe4b5', '#f0e68c', '#fffacd'],
+            sparkle: ['#ffffff', '#f0f0f0', '#fffacd', '#e6e6fa']
+        };
+        const palette = colors[effect] || colors.party;
+
+        for (let i = 0; i < 15; i++) {
+            let type;
+            if (effect === 'party') type = 'cube';
+            else if (effect === 'fireworks') type = 'sphere';
+            else if (effect === 'hearts') type = 'sphere'; // heart shape not possible with CSS, use sphere
+            else if (effect === 'rainbow') type = 'ring';
+            else if (effect === 'stars') type = 'star';
+            else type = 'sphere';
+            
+            const color = palette[i % palette.length];
+            const shape = createShape(type, color);
+            effectContainer.appendChild(shape);
+        }
+        // Remove after 5 seconds
+        setTimeout(clearEffects, 5000);
+    }
+
+    window.triggerEffect = function(effect) {
+        if (!currentChat) {
+            showMessage('Select a chat first', true);
+            return;
+        }
+        // Broadcast to others
+        const effectChannel = supabase.channel(`effects:${currentChat.id}`);
+        effectChannel.subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+                effectChannel.send({
+                    type: 'broadcast',
+                    event: 'effect',
+                    payload: { effect }
+                });
+            }
+        });
+        // Run locally
+        runEffect(effect);
+    };
+
+    // ---------- Authentication (unchanged) ----------
     async function loadCurrentUser() {
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -413,7 +758,7 @@
         }
     }
 
-    // ---------- Presence ----------
+    // ---------- Presence (unchanged) ----------
     async function setupPresence() {
         const channel = supabase.channel('online-users', { config: { presence: { key: currentUser.id } } });
         channel
@@ -430,12 +775,9 @@
             const onlineDot = el.querySelector('.online-dot');
             if (onlineDot) {
                 const isOnline = !!presenceState[userId];
-                // Only animate if online
                 onlineDot.className = `online-dot absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-[#231E33] ${isOnline ? 'bg-green-500 is-online' : 'bg-gray-400'}`;
             }
         });
-        
-        // Update header status if viewing a private chat
         if (currentChat && !currentChat.is_group && currentChat.otherUser) {
             const isOnline = !!presenceState[currentChat.otherUser.id];
             const headerDot = document.getElementById('chat-header-online-dot');
@@ -450,25 +792,19 @@
         }
     }
 
-    // ---------- Load chats ----------
+    // ---------- Load chats (unchanged) ----------
     async function loadChats() {
         if (!currentUser) return;
         const { data: participations } = await supabase.from('chat_participants').select('chat_id').eq('user_id', currentUser.id);
-        
         if (!participations || participations.length === 0) {
             privateChats = []; groupChats = []; renderChatLists(); return;
         }
-
         const chatIds = participations.map(p => p.chat_id);
         const { data: chats } = await supabase.from('chats').select('*').in('id', chatIds);
-
-        privateChats = [];
-        groupChats = [];
-
+        privateChats = []; groupChats = [];
         for (const chat of chats) {
             const { data: lastMsg } = await supabase.from('messages').select('content, created_at, sender_id').eq('chat_id', chat.id).order('created_at', { ascending: false }).limit(1).maybeSingle();
             chat.lastMessage = lastMsg;
-
             if (chat.is_group) {
                 const { data: members } = await supabase.from('chat_participants').select('user_id, profiles(id, username, avatar_url)').eq('chat_id', chat.id);
                 chat.members = members ? members.map(m => m.profiles) : [];
@@ -482,13 +818,12 @@
         renderChatLists();
     }
 
-    // ---------- Subscriptions ----------
+    // ---------- Subscriptions (unchanged) ----------
     function subscribeToChatChanges() {
         const chatParticipantsChannel = supabase.channel('chat-participants-changes')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_participants', filter: `user_id=eq.${currentUser.id}` }, loadChats)
             .subscribe();
         activeSubscriptions.push(chatParticipantsChannel);
-
         const messagesChannel = supabase.channel('messages-changes')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
                 const newMsg = payload.new;
@@ -499,10 +834,9 @@
         activeSubscriptions.push(messagesChannel);
     }
 
-    // ---------- Render ----------
+    // ---------- Render chat lists (unchanged) ----------
     function renderChatLists() {
         const presenceState = activeSubscriptions.find(s => s.topic?.startsWith('presence:online-users'))?.presenceState() || {};
-
         if (privateChats.length === 0) {
             privateChatsList.innerHTML = `<div class="text-center text-xs text-bubli-dark/40 dark:text-white/40 py-4 px-4">No chats yet.<br>Add a friend to start!</div>`;
         } else {
@@ -512,7 +846,6 @@
                 const lastMsg = chat.lastMessage;
                 const lastMsgText = lastMsg ? (lastMsg.sender_id === currentUser.id ? 'You: ' : '') + lastMsg.content : 'No messages yet';
                 const lastMsgTime = lastMsg ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-
                 return `
                     <div class="sidebar-item flex items-center gap-3 p-2 rounded-xl cursor-pointer mb-1 chat-item ${currentChat?.id === chat.id ? 'active' : ''}" onclick="selectChat('${chat.id}', false)" data-user-id="${otherUserId || ''}">
                         <div class="relative flex-shrink-0">
@@ -530,7 +863,6 @@
                 `;
             }).join('');
         }
-
         groupChatsList.innerHTML = groupChats.map(chat => {
             const lastMsg = chat.lastMessage;
             const lastMsgText = lastMsg ? (lastMsg.sender_id === currentUser.id ? 'You: ' : '') + lastMsg.content : 'No messages yet';
@@ -552,7 +884,7 @@
         }).join('');
     }
 
-    // ---------- Friend Requests ----------
+    // ---------- Friend Requests (unchanged) ----------
     async function loadFriendRequests() {
         if (!currentUser) return;
         const { data: requests } = await supabase.from('friend_requests').select('*, sender:profiles!sender_id(username, avatar_url), receiver:profiles!receiver_id(username, avatar_url)').or(`receiver_id.eq.${currentUser.id},sender_id.eq.${currentUser.id}`).eq('status', 'pending');
@@ -566,10 +898,8 @@
         const { data: targetUser } = await supabase.from('profiles').select('id').eq('username', username).single();
         if (!targetUser) { showMessage('User not found', true); return; }
         if (targetUser.id === currentUser.id) { showMessage('You cannot add yourself', true); return; }
-        
         const { data: existing } = await supabase.from('friend_requests').select('id').or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${targetUser.id}),and(sender_id.eq.${targetUser.id},receiver_id.eq.${currentUser.id})`).maybeSingle();
         if (existing) { showMessage('Request already pending', true); return; }
-
         const { error } = await supabase.from('friend_requests').insert({ sender_id: currentUser.id, receiver_id: targetUser.id });
         if (error) { showMessage('Error sending request', true); console.error(error); } 
         else { showMessage('Friend request sent!'); friendUsernameInput.value = ''; }
@@ -581,9 +911,7 @@
         if (!currentUser) { showMessage('Session expired', true); return; }
         if (window._acceptingRequest) return;
         window._acceptingRequest = true;
-
         try {
-            // 1. Check for existing chat
             const { data: existingChats } = await supabase.from('chat_participants').select('chat_id').eq('user_id', currentUser.id);
             if (existingChats && existingChats.length > 0) {
                 const chatIds = existingChats.map(c => c.chat_id);
@@ -599,16 +927,11 @@
                     return;
                 }
             }
-
-            // 2. Create new chat
             await supabase.from('friend_requests').update({ status: 'accepted' }).eq('id', requestId);
-            
             const { data: newChat, error: chatError } = await supabase.from('chats').insert({ is_group: false }).select().single();
             if (chatError || !newChat) throw new Error(chatError?.message || 'Chat creation failed');
-
             const { error: partError } = await supabase.from('chat_participants').insert([{ chat_id: newChat.id, user_id: currentUser.id }, { chat_id: newChat.id, user_id: senderId }]);
             if (partError) throw partError;
-
             await loadChats();
             const newPrivateChat = privateChats.find(c => c.otherUser?.id === senderId);
             if (newPrivateChat) selectChat(newPrivateChat.id, false);
@@ -632,7 +955,6 @@
             requestsList.innerHTML = '<p class="text-xs text-bubli-dark/40 dark:text-white/40 text-center py-2">No pending requests</p>';
             return;
         }
-
         requestsList.innerHTML = pendingRequests.map(req => {
             const isIncoming = req.receiver_id === currentUser.id;
             if (!isIncoming) {
@@ -659,22 +981,79 @@
         currentRequestSenderId = null;
     };
 
+    // ---------- Reaction UI (smart positioning) ----------
+    window.openReactionPicker = function(messageId, event) {
+        event.stopPropagation();
+        if (currentOpenReactionPicker) {
+            const oldPicker = document.getElementById(`reaction-picker-${currentOpenReactionPicker}`);
+            if (oldPicker) oldPicker.remove();
+        }
+        const btnRect = event.target.getBoundingClientRect();
+        const picker = document.createElement('div');
+        picker.id = `reaction-picker-${messageId}`;
+        picker.className = 'reaction-picker animate-pop-in';
+        picker.innerHTML = reactionEmojis.map(emoji => 
+            `<button class="text-2xl hover:scale-125 transition" onclick="toggleReaction(${messageId}, '${emoji}')">${emoji}</button>`
+        ).join('');
+        document.body.appendChild(picker);
+
+        // Position picker above or below button
+        const pickerRect = picker.getBoundingClientRect();
+        let top = btnRect.top - pickerRect.height - 10;
+        let left = btnRect.left + btnRect.width/2 - pickerRect.width/2;
+
+        // Adjust if off-screen
+        if (top < 0) top = btnRect.bottom + 10;
+        if (left < 0) left = 10;
+        if (left + pickerRect.width > window.innerWidth) left = window.innerWidth - pickerRect.width - 10;
+
+        picker.style.top = top + 'px';
+        picker.style.left = left + 'px';
+        currentOpenReactionPicker = messageId;
+
+        // Close when clicking outside
+        setTimeout(() => {
+            document.addEventListener('click', function closePicker(e) {
+                if (!picker.contains(e.target) && e.target !== event.target) {
+                    picker.remove();
+                    document.removeEventListener('click', closePicker);
+                    currentOpenReactionPicker = null;
+                }
+            });
+        }, 0);
+    };
+
     // ---------- Chat Logic ----------
     window.selectChat = async function(chatId, isGroup) {
-        // Clean up old subscriptions related to specific chat rooms
         activeSubscriptions.forEach(sub => {
-            if (sub.topic?.includes('chat:') || sub.topic?.includes('typing:')) {
+            if (sub.topic?.includes('chat:') || sub.topic?.includes('typing:') || sub.topic?.includes('reactions:') || sub.topic?.includes('effects:')) {
                 if (!sub.topic.includes('online-users')) sub.unsubscribe();
             }
         });
-        activeSubscriptions = activeSubscriptions.filter(s => !s.topic?.includes('chat:') && !s.topic?.includes('typing:'));
+        activeSubscriptions = activeSubscriptions.filter(s => !s.topic?.includes('chat:') && !s.topic?.includes('typing:') && !s.topic?.includes('reactions:') && !s.topic?.includes('effects:'));
 
         const chat = isGroup ? groupChats.find(c => c.id == chatId) : privateChats.find(c => c.id == chatId);
         currentChat = chat;
         if(!currentChat) return;
 
+        inputArea.classList.remove('hidden');
+
         const { data: msgs } = await supabase.from('messages').select('*, sender:profiles!sender_id(username, avatar_url)').eq('chat_id', chatId).order('created_at', { ascending: true });
         messages = msgs || [];
+
+        if (messages.length) {
+            const messageIds = messages.map(m => m.id);
+            const { data: reactions } = await supabase
+                .from('message_reactions')
+                .select('*')
+                .in('message_id', messageIds);
+            messageReactions = {};
+            reactions?.forEach(r => {
+                if (!messageReactions[r.message_id]) messageReactions[r.message_id] = [];
+                messageReactions[r.message_id].push(r);
+            });
+        }
+
         renderMessages();
 
         const messagesSubscription = supabase.channel(`chat:${chatId}`)
@@ -684,12 +1063,31 @@
                 newMsg.sender = senderProfile || { username: 'Unknown' };
                 messages.push(newMsg);
                 renderMessages();
-                if (document.hidden && newMsg.sender_id !== currentUser.id) playNotificationSound();
+                if (document.hidden && newMsg.sender_id !== currentUser.id) {
+                    playNotificationSound();
+                }
                 const targetChat = [...privateChats, ...groupChats].find(c => c.id === chatId);
                 if (targetChat) { targetChat.lastMessage = newMsg; renderChatLists(); }
             })
             .subscribe();
         activeSubscriptions.push(messagesSubscription);
+
+        const reactionsSubscription = supabase
+            .channel(`reactions:${chatId}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'message_reactions', filter: `message_id=in.(${messages.map(m => m.id).join(',')})` }, (payload) => {
+                const { eventType, new: newReaction, old: oldReaction } = payload;
+                if (eventType === 'INSERT') {
+                    if (!messageReactions[newReaction.message_id]) messageReactions[newReaction.message_id] = [];
+                    messageReactions[newReaction.message_id].push(newReaction);
+                } else if (eventType === 'DELETE') {
+                    if (messageReactions[oldReaction.message_id]) {
+                        messageReactions[oldReaction.message_id] = messageReactions[oldReaction.message_id].filter(r => r.id !== oldReaction.id);
+                    }
+                }
+                renderMessages();
+            })
+            .subscribe();
+        activeSubscriptions.push(reactionsSubscription);
 
         const typingChannel = supabase.channel(`typing:${chatId}`, { config: { broadcast: { self: true } } });
         typingChannel.on('broadcast', { event: 'typing' }, ({ payload }) => {
@@ -697,11 +1095,57 @@
         }).subscribe();
         activeSubscriptions.push(typingChannel);
 
+        // Subscribe to effects
+        const effectChannel = supabase.channel(`effects:${chatId}`);
+        effectChannel
+            .on('broadcast', { event: 'effect' }, ({ payload }) => {
+                runEffect(payload.effect);
+            })
+            .subscribe();
+        activeSubscriptions.push(effectChannel);
+
         renderChatHeader();
         if (window.innerWidth < 768) toggleMobileSidebar();
     };
 
-    function playNotificationSound() { new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3').play().catch(() => {}); }
+    // Reaction toggle (global)
+    window.toggleReaction = async function(messageId, emoji) {
+        if (!currentUser) return;
+        const existing = messageReactions[messageId]?.find(r => r.user_id === currentUser.id && r.emoji === emoji);
+        if (existing) {
+            const { error } = await supabase.from('message_reactions').delete().eq('id', existing.id);
+            if (error) console.error('Error deleting reaction:', error);
+        } else {
+            const { error } = await supabase.from('message_reactions').insert({
+                message_id: messageId,
+                user_id: currentUser.id,
+                emoji: emoji
+            });
+            if (error) console.error('Error adding reaction:', error);
+        }
+        const picker = document.getElementById(`reaction-picker-${messageId}`);
+        if (picker) picker.remove();
+        currentOpenReactionPicker = null;
+    };
+
+    function playNotificationSound() {
+        if (!('Audio' in window) && !('AudioContext' in window)) return;
+        const audio = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3');
+        audio.volume = 0.3;
+        audio.play().catch(() => {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.frequency.value = 880;
+                gainNode.gain.value = 0.1;
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.2);
+            } catch (e) { console.log('Notification sound failed:', e); }
+        });
+    }
 
     let typingTimeout;
     function showTypingIndicator(username) {
@@ -724,12 +1168,11 @@
         const otherUserId = currentChat.otherUser?.id;
         const isOnline = !isGroup && otherUserId && !!presenceState[otherUserId];
 
-        // Reset action button
         headerActionBtn.className = "btn-profile ml-auto px-4 py-2 rounded-xl font-display font-600 text-sm text-bubli-primary dark:text-bubli-light flex items-center gap-2 transition-opacity";
         headerActionBtn.onclick = null;
 
         if (isGroup) {
-            headerActionBtn.classList.add('opacity-0', 'pointer-events-none'); // Hide for groups
+            headerActionBtn.classList.add('opacity-0', 'pointer-events-none');
         } else {
             headerActionBtn.classList.remove('opacity-0', 'pointer-events-none');
             headerActionBtn.onclick = () => viewProfile(otherUserId);
@@ -760,10 +1203,16 @@
             const isOwn = msg.sender_id === currentUser.id;
             const avatarUrl = msg.sender?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.sender_id}`;
             const senderName = msg.sender?.username || 'Unknown';
+            const reactions = messageReactions[msg.id] || [];
+            const reactionCounts = reactions.reduce((acc, r) => {
+                acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+                return acc;
+            }, {});
+
             return `
-                <div class="flex ${isOwn ? 'justify-end' : 'justify-start'} animate-message-in">
+                <div class="message-wrapper flex ${isOwn ? 'justify-end' : 'justify-start'} animate-message-in">
                     ${!isOwn ? `<button onclick="viewProfile('${msg.sender_id}')" class="flex-shrink-0 mr-2 self-end"><img src="${avatarUrl}" class="w-8 h-8 rounded-full"></button>` : ''}
-                    <div class="max-w-[75%] sm:max-w-[60%]">
+                    <div class="max-w-[75%] sm:max-w-[60%] relative">
                         ${!isOwn ? `<p class="text-xs font-semibold text-bubli-primary dark:text-bubli-light mb-1 ml-1">${senderName}</p>` : ''}
                         <div class="message-bubble ${isOwn ? 'message-own' : 'message-other'} px-4 py-2.5">
                             <p class="text-sm ${isOwn ? 'text-white' : 'text-bubli-dark dark:text-white'}">${msg.content}</p>
@@ -771,6 +1220,19 @@
                         <div class="flex items-center gap-2 mt-1 ${isOwn ? 'justify-end' : 'justify-start'} px-1">
                             <span class="text-xs text-bubli-dark/40 dark:text-white/40">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             ${isOwn ? `<svg class="w-3.5 h-3.5 text-bubli-accent" fill="currentColor" viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/></svg>` : ''}
+                        </div>
+                        <!-- Simple plus button -->
+                        <button class="reaction-trigger absolute ${isOwn ? 'left-0 -ml-8' : 'right-0 -mr-8'} top-1/2 transform -translate-y-1/2" onclick="openReactionPicker(${msg.id}, event)">+</button>
+                        <!-- Reaction badges -->
+                        <div class="flex flex-wrap gap-1 mt-1 ${isOwn ? 'justify-end' : 'justify-start'}">
+                            ${Object.entries(reactionCounts).map(([emoji, count]) => {
+                                const userReacted = reactions.some(r => r.user_id === currentUser.id && r.emoji === emoji);
+                                return `
+                                    <span class="reaction-badge ${userReacted ? 'active' : ''}" onclick="toggleReaction(${msg.id}, '${emoji}')">
+                                        ${emoji} ${count}
+                                    </span>
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                 </div>
@@ -782,37 +1244,150 @@
     window.sendMessage = async function() {
         const text = messageInput.value.trim();
         if (!text || !currentChat) return;
-        await supabase.from('messages').insert({ chat_id: currentChat.id, sender_id: currentUser.id, content: text, created_at: new Date().toISOString() });
+        await supabase.from('messages').insert({ 
+            chat_id: currentChat.id, 
+            sender_id: currentUser.id, 
+            content: text, 
+            created_at: new Date().toISOString() 
+        });
         messageInput.value = '';
         messageInput.style.height = 'auto';
     };
 
-    window.toggleEmojiPicker = () => emojiPicker.classList.toggle('hidden');
-    window.insertEmoji = (emoji) => { messageInput.value += emoji; messageInput.focus(); toggleEmojiPicker(); };
+    // Emoji and Effects pickers
+    window.toggleEmojiPicker = () => {
+        emojiPicker.classList.toggle('hidden');
+        if (!emojiPicker.classList.contains('hidden')) {
+            effectsPicker.classList.add('hidden');
+        }
+    };
+    window.toggleEffectsPicker = () => {
+        effectsPicker.classList.toggle('hidden');
+        if (!effectsPicker.classList.contains('hidden')) {
+            emojiPicker.classList.add('hidden');
+        }
+    };
+    window.insertEmoji = (emoji) => { messageInput.value += emoji; messageInput.focus(); };
     function renderEmojiPicker() { emojiGrid.innerHTML = emojis.map(e => `<button class="emoji-btn w-8 h-8 flex items-center justify-center rounded hover:bg-bubli-accent/20 text-base" onclick="insertEmoji('${e}')">${e}</button>`).join(''); }
 
+    // ========== PROFILE VIEW (unchanged) ==========
     window.viewProfile = async function(userId) {
         if (!userId) return;
-        const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
         if (!profile) return;
 
-        const { data: mutualChats } = await supabase.from('chat_participants').select('chat_id').eq('user_id', currentUser.id);
-        const userChats = await supabase.from('chat_participants').select('chat_id').eq('user_id', userId);
-        const mutualChatIds = mutualChats?.map(c => c.chat_id).filter(id => userChats.data?.some(uc => uc.chat_id === id)) || [];
-        const { count: messageCount } = await supabase.from('messages').select('*', { count: 'exact', head: true }).in('chat_id', mutualChatIds);
-        
+        const isOwn = userId === currentUser.id;
+
+        const { data: mutualChats } = await supabase
+            .from('chat_participants')
+            .select('chat_id')
+            .eq('user_id', currentUser.id);
+
+        const userChats = await supabase
+            .from('chat_participants')
+            .select('chat_id')
+            .eq('user_id', userId);
+
+        const mutualChatIds = mutualChats?.map(c => c.chat_id)
+            .filter(id => userChats.data?.some(uc => uc.chat_id === id)) || [];
+
+        const { count: messageCount } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .in('chat_id', mutualChatIds);
+
+        const { count: mutualFriendsCount } = await supabase
+            .from('friend_requests')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'accepted')
+            .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUser.id})`);
+
         const presenceState = activeSubscriptions.find(s => s.topic?.startsWith('presence:online-users'))?.presenceState() || {};
         const isOnline = !!presenceState[userId];
 
+        const joinedDate = profile.created_at 
+            ? new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            : 'Unknown';
+
+        const bio = profile.bio || 'No bio yet.';
+
         document.getElementById('profile-name').textContent = profile.username;
         document.getElementById('profile-avatar').src = profile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`;
-        document.getElementById('profile-status-text').textContent = isOnline ? 'Online' : 'Offline';
+        
+        const statusDot = document.getElementById('profile-status-dot');
+        const statusText = document.getElementById('profile-status-text');
+        if (isOnline) {
+            statusDot.className = 'absolute bottom-1 right-1 w-5 h-5 rounded-full border-3 border-white dark:border-[#2D2640] bg-green-500';
+            statusText.textContent = 'Online';
+            statusText.className = 'text-sm text-green-500 mb-2';
+        } else {
+            statusDot.className = 'absolute bottom-1 right-1 w-5 h-5 rounded-full border-3 border-white dark:border-[#2D2640] bg-gray-400';
+            statusText.textContent = 'Offline';
+            statusText.className = 'text-sm text-gray-500 mb-2';
+        }
+
+        const bioDisplayP = profileBioDisplay.querySelector('p');
+        bioDisplayP.textContent = bio;
+        bioTextarea.value = bio;
+
+        if (isOwn) {
+            editBioBtn.classList.remove('hidden');
+            profileBioDisplay.classList.remove('hidden');
+            profileBioEdit.classList.add('hidden');
+        } else {
+            editBioBtn.classList.add('hidden');
+            profileBioDisplay.classList.remove('hidden');
+            profileBioEdit.classList.add('hidden');
+        }
+
         document.getElementById('profile-messages').textContent = messageCount || '0';
         document.getElementById('profile-chats').textContent = mutualChatIds.length.toString();
+        document.getElementById('profile-mutual-friends').textContent = mutualFriendsCount || '0';
+        document.getElementById('profile-joined').textContent = `Joined ${joinedDate}`;
 
         profileModal.classList.remove('hidden');
         profileModal.classList.add('flex');
     };
+
+    // Bio edit handlers (unchanged)
+    editBioBtn.addEventListener('click', () => {
+        profileBioDisplay.classList.add('hidden');
+        profileBioEdit.classList.remove('hidden');
+    });
+
+    cancelBioBtn.addEventListener('click', () => {
+        profileBioDisplay.classList.remove('hidden');
+        profileBioEdit.classList.add('hidden');
+        const originalBio = profileBioDisplay.querySelector('p').textContent;
+        bioTextarea.value = originalBio;
+    });
+
+    saveBioBtn.addEventListener('click', async () => {
+        const newBio = bioTextarea.value.trim();
+        if (newBio === currentProfile.bio) {
+            cancelBioBtn.click();
+            return;
+        }
+        const { error } = await supabase
+            .from('profiles')
+            .update({ bio: newBio })
+            .eq('id', currentUser.id);
+        if (error) {
+            showMessage('Failed to update bio', true);
+            console.error(error);
+        } else {
+            currentProfile.bio = newBio;
+            profileBioDisplay.querySelector('p').textContent = newBio || 'No bio yet.';
+            showMessage('Bio updated!');
+        }
+        profileBioDisplay.classList.remove('hidden');
+        profileBioEdit.classList.add('hidden');
+    });
 
     window.closeProfile = () => { profileModal.classList.add('hidden'); profileModal.classList.remove('flex'); };
     window.startDirectChat = () => { closeProfile(); const existingChat = privateChats.find(c => c.otherUser?.username === document.getElementById('profile-name').textContent); if (existingChat) selectChat(existingChat.id, false); else showMessage('You need to be friends to start a chat'); };
@@ -829,6 +1404,8 @@
         renderEmojiPicker();
         subscribeToChatChanges();
 
+        inputArea.classList.add('hidden');
+
         supabase.channel('friend_requests').on('postgres_changes', { event: '*', schema: 'public', table: 'friend_requests', filter: `receiver_id=eq.${currentUser.id}` }, loadFriendRequests).subscribe();
 
         document.getElementById('accept-request-btn').addEventListener('click', async () => {
@@ -841,12 +1418,30 @@
 
         document.getElementById('reject-request-btn').addEventListener('click', async () => { if (currentRequestId) { await rejectRequest(currentRequestId); closeRequestModal(); } });
 
-        document.addEventListener('click', (e) => { if (!emojiPicker.contains(e.target) && !e.target.closest('[onclick="toggleEmojiPicker()"]')) emojiPicker.classList.add('hidden'); });
+        document.addEventListener('click', (e) => {
+            if (!emojiPicker.contains(e.target) && !e.target.closest('[onclick="toggleEmojiPicker()"]')) emojiPicker.classList.add('hidden');
+            if (!effectsPicker.contains(e.target) && !e.target.closest('[onclick="toggleEffectsPicker()"]')) effectsPicker.classList.add('hidden');
+        });
         profileModal.addEventListener('click', (e) => { if (e.target === profileModal) closeProfile(); });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeProfile(); closeRequestModal(); emojiPicker.classList.add('hidden'); } });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeProfile(); closeRequestModal(); emojiPicker.classList.add('hidden'); effectsPicker.classList.add('hidden'); } });
     }
 
     init();
 </script>
+
+<!-- Database upgrade instructions -->
+<!--
+Run this SQL in your Supabase SQL editor:
+
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS bio TEXT;
+CREATE TABLE IF NOT EXISTS message_reactions (
+  id BIGSERIAL PRIMARY KEY,
+  message_id BIGINT NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  emoji TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(message_id, user_id, emoji)
+);
+-->
 </body>
 </html>
